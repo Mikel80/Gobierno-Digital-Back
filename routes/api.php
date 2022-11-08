@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 // Public Routes
+Route::get('/user', [UserController::class, 'index']);
 Route::post('/login', [UserController::class, 'login']);
+Route::post('/user', [UserController::class, 'store']);
+// Route::get('/user', [UserController::class, 'show']);
 
 // Protected Routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    Route::post('/user', [UserController::class, 'store']);
     Route::post('/logout', [UserController::class, 'logout']);
 });

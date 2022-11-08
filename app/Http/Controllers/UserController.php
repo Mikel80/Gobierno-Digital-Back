@@ -16,7 +16,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return User::with('roles')->get();
     }
 
     /**
@@ -30,7 +30,8 @@ class UserController extends Controller
         $fields = $request->validate([
             'name' => 'required|string',
             'email' => 'required|string|unique:users,email',
-            'password' => 'required|string'
+            'password' => 'required|string',
+            'role' => 'required|string',
         ]);
 
         $user = User::create([
@@ -54,7 +55,7 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        return User::find($id);
+        return User::find($id)->roles();
     }
 
     /**
@@ -99,6 +100,10 @@ class UserController extends Controller
             return response([
                 'message' => 'Bad Credentials'
             ], 401);
+        }
+
+        foreach ($user->roles() as $role) {
+            array_push($user['roles'], $role);
         }
 
         $token = $user->createToken('myapptoken')->plainTextToken;
