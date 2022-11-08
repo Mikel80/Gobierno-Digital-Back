@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Roles;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
@@ -31,7 +32,7 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|string|unique:users,email',
             'password' => 'required|string',
-            'role' => 'required|string',
+            'role' => 'required|integer',
         ]);
 
         $user = User::create([
@@ -39,6 +40,9 @@ class UserController extends Controller
             'email' => $fields['email'],
             'password' => bcrypt($fields['password'])
         ]);
+
+        $role = Roles::find($fields['role']);
+        $user->roles()->attach($role);
 
         $response = [
             'user' => $user
@@ -94,16 +98,12 @@ class UserController extends Controller
             'password' => 'required|string'
         ]);
 
-        $user = User::where('email', $fields['email'])->first();
+        $user = User::where('email', $fields['email'])->with('roles')->first();
 
         if(!$user || !Hash::check($fields['password'], $user->password)) {
             return response([
                 'message' => 'Bad Credentials'
             ], 401);
-        }
-
-        foreach ($user->roles() as $role) {
-            array_push($user['roles'], $role);
         }
 
         $token = $user->createToken('myapptoken')->plainTextToken;
